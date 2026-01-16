@@ -1,13 +1,16 @@
 defmodule Uno.Store do
   import Funx.Monad
+  alias Uno.Game
   alias Funx.Monad.Either
 
+  @spec create_table(atom()) :: Either.t(atom(), any())
   def create_table(table) when is_atom(table) do
     Either.from_try(fn ->
       :ets.new(table, [:named_table, :set, :public])
     end)
   end
 
+  @spec drop_table(atom()) :: Either.t(atom(), any())
   def drop_table(table) when is_atom(table) do
     Either.from_try(fn ->
       :ets.delete(table)
@@ -15,6 +18,7 @@ defmodule Uno.Store do
     |> map(fn _ -> table end)
   end
 
+  @spec insert_item(atom(), Game.t()) :: Either.t(Game.t(), any())
   def insert_item(table, %{id: id} = item) when is_atom(table) do
     Either.from_try(fn ->
       :ets.insert(table, {id, Map.from_struct(item)})
@@ -22,6 +26,7 @@ defmodule Uno.Store do
     |> map(fn _ -> item end)
   end
 
+  @spec get_item(atom(), term()) :: Either.t(map(), :not_found | any())
   def get_item(table, id) when is_atom(table) do
     Either.from_try(fn ->
       :ets.lookup(table, id)
@@ -32,6 +37,7 @@ defmodule Uno.Store do
     end)
   end
 
+  @spec get_all_items(atom()) :: Either.t([map()], any())
   def get_all_items(table) when is_atom(table) do
     Either.from_try(fn ->
       :ets.tab2list(table)
@@ -41,6 +47,7 @@ defmodule Uno.Store do
     end)
   end
 
+  @spec delete_item(atom(), term()) :: Either.t(term(), any())
   def delete_item(table, id) when is_atom(table) do
     Either.from_try(fn ->
       :ets.delete(table, id)

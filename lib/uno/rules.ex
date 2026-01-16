@@ -1,53 +1,143 @@
 defmodule Uno.Rules do
-  alias Funx.Validator.{Any, Equal}
-  alias Funx.Optics.{Lens, Prism}
-  alias Uno.{Card, Game}
+  alias Funx.Optics.Lens
+  alias Uno.{Card, Hand, Game}
   use Funx.Validate
   use Funx.Eq
+  use Funx.Ord
+  use Funx.Predicate
 
-  # Card playability - eq comparator for matching color OR value
-  def playable_card do
+  # ============================================================
+  # CARD MATCHING AND EQUALITY
+  # What it means for two cards to “match” in Uno
+  # ============================================================
+
+  # We are at the edge of what Dialyzer can infer here
+  @dialyzer {:nowarn_function, playable_card_eq: 0}
+  @spec playable_card_eq() :: Funx.Eq.eq_t()
+  def playable_card_eq do
     eq do
       any do
-        on Prism.key(:color)
-        on Prism.key(:value)
+        on Card.color_lens()
+        on Card.value_lens()
       end
     end
   end
 
-  # Game state predicates
+  @spec playable?(Card.t(), Card.t()) :: boolean()
+  def playable?(%Card{} = hand_card, %Card{} = top_card) do
+    any_wild_card?(hand_card) or Funx.Eq.eq?(hand_card, top_card, playable_card_eq())
+  end
+
+  @spec color_match?(Card.t(), Card.t()) :: boolean()
+  def color_match?(%Card{} = card, %Card{} = top_card) do
+    Card.get_color(card) == Card.get_color(top_card)
+  end
+
+  @spec value_match?(Card.t(), Card.t()) :: boolean()
+  def value_match?(%Card{} = card, %Card{} = top_card) do
+    Card.get_value(card) == Card.get_value(top_card)
+  end
+
+  # ============================================================
+  # CARD EFFECTS
+  # What special cards mean in the game
+  # ============================================================
+
+  @spec skip_card?(Card.t()) :: boolean()
+  def skip_card?(%Card{} = card) do
+    Card.get_value(card) == "S"
+  end
+
+  @spec reverse_card?(Card.t()) :: boolean()
+  def reverse_card?(%Card{} = card) do
+    Card.get_value(card) == "R"
+  end
+
+  @spec draw_two_card?(Card.t()) :: boolean()
+  def draw_two_card?(%Card{} = card) do
+    Card.get_value(card) == "D"
+  end
+
+  @spec action_card?(Card.t()) :: boolean()
+  def action_card?(%Card{} = card) do
+    Card.get_value(card) in Card.actions()
+  end
+
+  @spec wild_card?(Card.t()) :: boolean()
+  def wild_card?(%Card{} = card) do
+    Card.get_value(card) in ["W"]
+  end
+
+  @spec wild_draw_four_card?(Card.t()) :: boolean()
+  def wild_draw_four_card?(%Card{} = card) do
+    Card.get_value(card) == "W4"
+  end
+
+  @spec any_wild_card?(Card.t()) :: boolean()
+  def any_wild_card?(%Card{} = card) do
+    any_wild_pred? =
+      pred do
+        any do
+          &wild_card?/1
+          &wild_draw_four_card?/1
+        end
+      end
+
+    any_wild_pred?.(card)
+  end
+
+  # ============================================================
+  # TURN AND TABLE CONDITIONS
+  # Facts about the current game state
+  # ============================================================
+
+  @spec two_player?(Game.t()) :: boolean()
+  def two_player?(%Game{} = game) do
+    length(Lens.view!(game, Game.hands_lens())) == 2
+  end
+
+  @spec must_say_uno?(Hand.t()) :: boolean()
+  def must_say_uno?(hand) when is_list(hand), do: length(hand) == 1
+
+  @spec discard_pile_has_cards?(Game.t()) :: boolean()
   def discard_pile_has_cards?(%Game{} = game) do
     length(Lens.view!(game, Game.discard_pile_lens())) > 1
   end
 
-  # Validators
-  def card_color_match(%Card{} = shown) do
-    validate do
-      at Card.color_lens(),
-         {
-           Equal,
-           value: Lens.view!(shown, Card.color_lens())
-         }
+  # ============================================================
+  # ORDERING OF PLAYS
+  # How to rank cards when multiple plays are possible
+  # ============================================================
+
+  @spec play_ord(Card.t()) :: Funx.Ord.ord_t()
+  def play_ord(%Card{} = top_card) do
+    ord do
+      desc fn card ->
+        cond do
+          action_card?(card) and color_match?(card, top_card) -> 4
+          color_match?(card, top_card) -> 3
+          value_match?(card, top_card) -> 2
+          any_wild_card?(card) -> 1
+          true -> 0
+        end
+      end
     end
   end
 
-  def card_value_match(%Card{} = shown) do
-    validate do
-      at Card.value_lens(),
-         {
-           Equal,
-           value: Lens.view!(shown, Card.value_lens())
-         }
-    end
+  # ============================================================
+  # END OF GAME RULES
+  # When the game ends and who wins
+  # ============================================================
+
+  @spec game_over?(Game.t()) :: boolean()
+  def game_over?(%Game{} = game) do
+    hands = Game.get_hands(game)
+    Enum.any?(hands, &Enum.empty?/1)
   end
 
-  def card_match(%Card{} = shown) do
-    validate do
-      {
-        Any,
-        validators: [card_color_match(shown), card_value_match(shown)],
-        message: fn -> "Cards must be playable on each other" end
-      }
-    end
+  @spec winner(Game.t()) :: non_neg_integer() | nil
+  def winner(%Game{} = game) do
+    hands = Game.get_hands(game)
+    Enum.find_index(hands, &Enum.empty?/1)
   end
 end

@@ -11,7 +11,13 @@ defmodule Uno.MixProject do
       aliases: aliases(),
       deps: deps(),
       compilers: [:phoenix_live_view] ++ Mix.compilers(),
-      listeners: [Phoenix.CodeReloader]
+      listeners: [Phoenix.CodeReloader],
+      test_coverage: [tool: ExCoveralls],
+      dialyzer: [
+        plt_add_apps: [:elixir, :mix, :funx],
+        plt_core_path: "_build/#{Mix.env()}",
+        plt_file: {:no_warn, "_build/#{Mix.env()}/dialyzer.plt"}
+      ]
     ]
   end
 
@@ -61,7 +67,11 @@ defmodule Uno.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:funx, github: "JKWA/funx", ref: "4ab4837"}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false},
+      {:castore, "~> 1.0", only: [:dev, :test]},
+      {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
+      {:funx, github: "JKWA/funx", ref: "25abf22"}
     ]
   end
 

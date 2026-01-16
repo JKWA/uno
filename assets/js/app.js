@@ -26,10 +26,36 @@ import {hooks as colocatedHooks} from "phoenix-colocated/uno"
 import topbar from "../vendor/topbar"
 
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+const Hooks = {
+  WildCardPrompt: {
+    mounted() {
+      this.handleEvent("prompt_wild_color", ({player, card_id}) => {
+        const color = prompt("Choose a color (red, blue, green, yellow):")
+        this.pushEvent("play_wild", {
+          player: player,
+          card_id: card_id,
+          color: color ? color.toLowerCase() : null
+        })
+      })
+    }
+  },
+  AutoDismiss: {
+    mounted() {
+      this.timeout = setTimeout(() => {
+        this.el.click()
+      }, 5000)
+    },
+    destroyed() {
+      clearTimeout(this.timeout)
+    }
+  }
+}
+
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...colocatedHooks, ...Hooks},
 })
 
 // Show progress bar on live navigation and form submits
@@ -39,6 +65,7 @@ window.addEventListener("phx:page-loading-stop", _info => topbar.hide())
 
 // connect if there are any LiveViews on the page
 liveSocket.connect()
+
 
 // expose liveSocket on window for web console debug logs and latency simulation:
 // >> liveSocket.enableDebug()

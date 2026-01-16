@@ -1,0 +1,39 @@
+<div class="container mx-auto p-4 max-w-4xl" id="game-container" phx-hook="WildCardPrompt">
+  <div class="flex justify-end mb-4">
+    <button phx-click="new_game" class="btn btn-primary">New Game</button>
+  </div>
+
+  <%= if @game_over do %>
+    <div role="alert" class="alert alert-success mb-4">
+      <span>Game Over! Player {@winner + 1} wins!</span>
+    </div>
+  <% end %>
+
+  <.player_panel
+    player={0}
+    current_player={@game.current_player}
+    uno?={@p1_uno}
+    hand={@p1_hand}
+    playable_ids={@p1_playable_ids}
+  />
+
+  <div class="card bg-base-300 shadow-xl mb-4">
+    <div class="card-body items-center text-center">
+      <%= if @top_card do %>
+        <div class="mt-2">
+          <.card_face card={@top_card} outline?={false} on_discard?={true} />
+        </div>
+      <% else %>
+        <span class="text-gray-500">(empty)</span>
+      <% end %>
+    </div>
+  </div>
+
+  <.player_panel
+    player={1}
+    current_player={@game.current_player}
+    uno?={@p2_uno}
+    hand={@p2_hand}
+    playable_ids={@p2_playable_ids}
+  />
+</div>
