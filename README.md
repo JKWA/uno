@@ -1,18 +1,31 @@
 # Uno
 
-To start your Phoenix server:
+A small Uno game built to show how to model a domain with Funx.
 
-* Run `mix setup` to install and setup dependencies
-* Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+This project keeps the domain model explicit and composable:
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+- `Uno.Game` is the aggregate root: a plain struct plus pure state transitions, updated with optics
+- `Uno.Rules` is domain policy: predicates, Eq, and Ord that define what counts as playable, how to rank plays, and when the game ends
+- `Uno.Validator.*` are domain constraints: reusable validators such as current turn, game not over, and valid play
+- `Uno.Service` is an application service: loads the aggregate, validates, applies pure transformations, then persists
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+The UI is a Phoenix LiveView that renders the current state and sends player intents as events.
 
-## Learn more
+## Run locally
 
-* Official website: https://www.phoenixframework.org/
-* Guides: https://hexdocs.pm/phoenix/overview.html
-* Docs: https://hexdocs.pm/phoenix
-* Forum: https://elixirforum.com/c/phoenix-forum
-* Source: https://github.com/phoenixframework/phoenix
+- Run `mix setup` to install and set up dependencies
+- Start the Phoenix endpoint with `mix phx.server`
+  - or inside IEx with `iex -S mix phx.server`
+
+Then visit `http://localhost:4000`.
+
+To jump straight into the game, visit `http://localhost:4000/game`.
+
+## Project layout
+
+- `lib/uno/game.ex`: aggregate root and state transitions
+- `lib/uno/rules.ex`: domain rules: predicates and ordering
+- `lib/uno/validator/*.ex`: domain validators
+- `lib/uno/games.ex`: application service entry points
+- `lib/uno_web/live/game/*`: LiveView UI
+
