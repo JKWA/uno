@@ -2,6 +2,7 @@ defmodule Uno.Card do
   import Funx.Macros, only: [eq_for: 2, ord_for: 2]
   alias Funx.Optics.{Lens, Traversal}
   alias Funx.Validator.In
+  alias Funx.Monad.Either
   use Funx.Eq
   use Funx.Ord
   use Funx.Validate
@@ -11,23 +12,27 @@ defmodule Uno.Card do
   # The shape of a card and valid values
   # ============================================================
 
-  @colors [:red, :blue, :green, :yellow]
-  @number_values 0..9 |> Enum.map(&Integer.to_string/1)
-  @action_values ["S", "R", "D"]
-  @wild_values ["W", "W4"]
-  @values @number_values ++ @action_values ++ @wild_values
+  @card_colors [:red, :blue, :green, :yellow]
+  @number_cards 0..9 |> Enum.map(&Integer.to_string/1)
+  @action_cards ["S", "R", "D"]
+  @wild_cards ["W", "W4"]
+  @card_values @number_cards ++ @action_cards ++ @wild_cards
 
   defstruct [:id, :color, :value]
 
-  def colors, do: @colors
-  def values, do: @values
+  def colors, do: @card_colors
+  def values, do: @card_values
 
-  def new(color, value) when color in @colors and value in @values do
+  # Invariant: when creating a new card,
+  # the card must have a valid color and value.
+  def new(color, value) do
     %__MODULE__{
       id: :erlang.unique_integer([:positive]) |> Integer.to_string(),
       color: color,
       value: value
     }
+    |> Either.validate(validate_card())
+    |> Either.to_try!()
   end
 
   # ============================================================
@@ -66,8 +71,8 @@ defmodule Uno.Card do
 
   def validate_card do
     validate do
-      at value_lens(), {In, values: @values, message: fn _value -> "Invalid value" end}
-      at color_lens(), {In, values: @colors, message: fn _color -> "Invalid color" end}
+      at value_lens(), {In, values: @card_values, message: fn _value -> "Invalid value" end}
+      at color_lens(), {In, values: @card_colors, message: fn _color -> "Invalid color" end}
     end
   end
 

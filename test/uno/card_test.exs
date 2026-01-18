@@ -24,13 +24,13 @@ defmodule Uno.CardTest do
     end
 
     test "raises for invalid color" do
-      assert_raise FunctionClauseError, fn ->
+      assert_raise Funx.Errors.ValidationError, fn ->
         Card.new(:purple, "5")
       end
     end
 
     test "raises for invalid value" do
-      assert_raise FunctionClauseError, fn ->
+      assert_raise Funx.Errors.ValidationError, fn ->
         Card.new(:red, "X")
       end
     end
