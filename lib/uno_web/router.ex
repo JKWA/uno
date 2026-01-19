@@ -17,11 +17,9 @@ defmodule UnoWeb.Router do
   scope "/", UnoWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
-
     live_session :default,
       layout: {UnoWeb.Layouts, :game} do
-      live "/game", Game.Index, :index
+      live "/", Game.Index, :index
     end
   end
 

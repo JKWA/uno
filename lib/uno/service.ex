@@ -3,8 +3,7 @@ defmodule Uno.Service do
   use Funx.Monad.Maybe
 
   alias Uno.{Game, Repo}
-  alias Uno.Action.DrawForPlayer
-  alias Uno.Action.AdvanceTurn
+  alias Uno.Action.{ApplyDrawTwo, ApplyReverse, ApplySkip, ApplyWildDrawFour, DrawForPlayer}
   alias Uno.Validator.{CurrentTurn, GameOver, ValidPlay}
   alias Funx.Validator.Not
 
@@ -13,12 +12,13 @@ defmodule Uno.Service do
   # Creating and retrieving games
   # ============================================================
 
+  # Invariant: when creating a new game, it must be properly initialized and saved.
   def create do
     new_game = Game.start()
 
     maybe new_game, as: :raise do
       map Game.deal(2, 7)
-      bind Game.flip()
+      bind Game.flip_card()
       bind Repo.save()
     end
   end
@@ -58,7 +58,11 @@ defmodule Uno.Service do
       ]
 
       map Game.play_card(player_index, card_id)
-      map AdvanceTurn
+      map ApplyReverse
+      map ApplySkip
+      map ApplyDrawTwo
+      map ApplyWildDrawFour
+      map Game.next_player()
       bind Repo.save()
     end
   end

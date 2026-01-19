@@ -19,8 +19,6 @@ The UI is a Phoenix LiveView that renders the current state and sends player int
 
 Then visit `http://localhost:4000`.
 
-To jump straight into the game, visit `http://localhost:4000/game`.
-
 ## Project layout
 
 - `lib/uno/game.ex`: aggregate root and state transitions

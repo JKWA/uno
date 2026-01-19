@@ -61,6 +61,15 @@ defmodule Uno.Game do
     |> Maybe.to_try!("invalid game state: card #{card_id} not in player #{player_index} hand")
   end
 
+  def get_next_player_index(%__MODULE__{} = game) do
+    hands = get_hands(game)
+    direction = get_direction(game)
+    current = get_current_player(game)
+    num_players = length(hands)
+
+    Integer.mod(current + direction, num_players)
+  end
+
   # ============================================================
   # GAME INITIALIZATION
   # Creating or resetting a game
@@ -127,7 +136,7 @@ defmodule Uno.Game do
   # Moving cards between piles
   # ============================================================
 
-  def flip(%__MODULE__{} = game) do
+  def flip_card(%__MODULE__{} = game) do
     draw_pile = get_draw_pile(game)
 
     maybe draw_pile do

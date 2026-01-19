@@ -54,7 +54,7 @@ defmodule Uno.GameTest do
     end
   end
 
-  describe "flip/1" do
+  describe "flip_card/1" do
     test "moves top card from draw pile to discard pile" do
       c1 = card(:red, "1")
       c2 = card(:blue, "2")
@@ -65,7 +65,7 @@ defmodule Uno.GameTest do
           discard_pile: []
         )
 
-      result = Game.flip(game)
+      result = Game.flip_card(game)
 
       assert %Just{value: new_game} = result
 
@@ -76,7 +76,7 @@ defmodule Uno.GameTest do
     test "returns Nothing when draw pile is empty" do
       game = game(draw_pile: [])
 
-      assert Maybe.nothing?(Game.flip(game))
+      assert Maybe.nothing?(Game.flip_card(game))
     end
   end
 
@@ -127,7 +127,7 @@ defmodule Uno.GameTest do
       assert Game.get_current_player(new_game) == 0
     end
 
-    test "reverse_direction flips direction" do
+    test "reverse_direction flip_cards direction" do
       game =
         game()
         |> Map.put(:direction, 1)

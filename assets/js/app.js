@@ -41,6 +41,16 @@ const Hooks = {
         }
       })
     }
+  },
+  AutoDismiss: {
+    mounted() {
+      this.timeout = setTimeout(() => {
+        this.el.click()
+      }, 5000)
+    },
+    destroyed() {
+      clearTimeout(this.timeout)
+    }
   }
 }
 
