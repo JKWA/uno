@@ -71,7 +71,7 @@ defmodule Uno.MixProject do
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:castore, "~> 1.0", only: [:dev, :test]},
       {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
-      {:funx, github: "JKWA/funx", ref: "25abf22"}
+      {:funx, "~> 0.7"}
     ]
   end
 
