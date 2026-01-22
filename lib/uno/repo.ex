@@ -6,17 +6,17 @@ defmodule Uno.Repo do
 
   @table_name :uno
 
-  @spec create_table() :: Either.t(atom(), any())
+  @spec create_table() :: Either.t(any(), atom())
   def create_table do
     Store.create_table(@table_name)
   end
 
-  @spec save(Game.t()) :: Either.t(Game.t(), any())
+  @spec save(Game.t()) :: Either.t(any(), Game.t())
   def save(%Game{} = game) do
     Store.insert_item(@table_name, game)
   end
 
-  @spec get(term()) :: Either.t(Game.t(), :not_found | any())
+  @spec get(term()) :: Either.t(:not_found | any(), Game.t())
   def get(id) do
     Store.get_item(@table_name, id)
     |> map(fn data -> struct(Game, data) end)
@@ -29,7 +29,7 @@ defmodule Uno.Repo do
     |> Either.get_or_else([])
   end
 
-  @spec delete(Game.t()) :: Either.t(term(), any())
+  @spec delete(Game.t()) :: Either.t(any(), term())
   def delete(%Game{id: id}) do
     Store.delete_item(@table_name, id)
   end

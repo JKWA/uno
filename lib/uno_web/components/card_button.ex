@@ -6,8 +6,10 @@ defmodule UnoWeb.Components.CardButton do
   import UnoWeb.Components.CardFace
 
   def card_button(assigns) do
-    outline? = String.contains?(assigns.class || "", "btn-outline")
-    assigns = assign(assigns, :card_id, Card.get_id(assigns.card))
+    assigns =
+      assigns
+      |> assign(:card_id, Card.get_id(assigns.card))
+      |> assign(:outline?, String.contains?(assigns.class || "", "btn-outline"))
 
     ~H"""
     <button
@@ -16,7 +18,7 @@ defmodule UnoWeb.Components.CardButton do
       phx-value-card_id={@card_id}
       class="p-0 bg-transparent border-0 outline-none focus:outline-none focus:ring-0 cursor-pointer"
     >
-      <.card_face card={@card} outline?={outline?} />
+      <.card_face card={@card} outline?={@outline?} />
     </button>
     """
   end

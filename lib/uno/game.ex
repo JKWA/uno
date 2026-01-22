@@ -223,7 +223,7 @@ defmodule Uno.Game do
   # DEALING
   # ============================================================
 
-  @spec deal(t(), integer(), integer()) :: Either.t(t(), any())
+  @spec deal(t(), integer(), integer()) :: Either.t(any(), t())
   def deal(%__MODULE__{} = game, num_players, cards_per_player) do
     hands = List.duplicate([], num_players)
     game = Lens.set!(game, hands_lens(), hands)
@@ -263,7 +263,7 @@ defmodule Uno.Game do
   # RESHUFFLING
   # ============================================================
 
-  @spec reshuffle(t()) :: Either.t(t(), atom())
+  @spec reshuffle(t()) :: Either.t(atom(), t())
   def reshuffle(%__MODULE__{} = game) do
     either game do
       validate DiscardPileHasCards
