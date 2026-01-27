@@ -159,11 +159,5 @@ defmodule Uno.Card do
     end
   end
 
-  ord_for(
-    Uno.Card,
-    ord do
-      asc Lens.key(:color)
-      asc Lens.key(:value)
-    end
-  )
+  ord_for(Uno.Card, Uno.Card.card_ord())
 end

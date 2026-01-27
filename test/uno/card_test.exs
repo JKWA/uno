@@ -204,4 +204,20 @@ defmodule Uno.CardTest do
       assert Funx.Ord.compare(c2, c1, Card.card_ord()) == :gt
     end
   end
+
+  describe "ord_for uses card_ord" do
+    test "orders by color first, then value descending" do
+      c1 = Card.new(:blue, "2")
+      c2 = Card.new(:blue, "9")
+
+      assert Funx.Ord.compare(c2, c1) == :gt
+    end
+
+    test "color dominates value in ordering" do
+      c1 = Card.new(:blue, "9")
+      c2 = Card.new(:red, "1")
+
+      assert Funx.Ord.compare(c2, c1) == :gt
+    end
+  end
 end
