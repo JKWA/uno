@@ -10,8 +10,8 @@ defmodule Uno.Validator.ValidPlay do
     player_index = Keyword.fetch!(opts, :player_index)
     card_id = Keyword.fetch!(opts, :card_id)
 
-    top_card = Game.get_card_in_play(game)
-    card = Game.get_card_in_hand(game, player_index, card_id)
+    top_card = Game.card_in_play(game)
+    card = Game.card_in_hand(game, player_index, card_id)
 
     Either.lift_predicate(
       game,

@@ -30,8 +30,8 @@ defmodule Uno.Action.ApplyWildDrawFourTest do
       result = ApplyWildDrawFour.bind(game, [color: nil], %{})
 
       assert %Right{right: new_game} = result
-      assert Game.get_hands(new_game) == [[], [], []]
-      assert Game.get_current_player(new_game) == 0
+      assert Game.hands(new_game) == [[], [], []]
+      assert Game.current_player(new_game) == 0
     end
 
     test "sets wild color and forces next player to draw four cards and skips them" do
@@ -51,9 +51,9 @@ defmodule Uno.Action.ApplyWildDrawFourTest do
       result = ApplyWildDrawFour.bind(game, [color: :green], %{})
 
       assert %Right{right: new_game} = result
-      assert Game.get_card_in_play(new_game).color == :green
-      assert length(Enum.at(Game.get_hands(new_game), 1)) == 4
-      assert Game.get_current_player(new_game) == 1
+      assert Game.card_in_play(new_game).color == :green
+      assert length(Enum.at(Game.hands(new_game), 1)) == 4
+      assert Game.current_player(new_game) == 1
     end
 
     test "returns error when color is nil for wild draw four" do
@@ -110,8 +110,8 @@ defmodule Uno.Action.ApplyWildDrawFourTest do
       result = ApplyWildDrawFour.bind(game, [color: :green], %{})
 
       assert %Right{right: new_game} = result
-      assert length(Enum.at(Game.get_hands(new_game), 1)) == 4
-      assert Game.get_current_player(new_game) == 1
+      assert length(Enum.at(Game.hands(new_game), 1)) == 4
+      assert Game.current_player(new_game) == 1
     end
 
     test "raises when not enough cards even after reshuffle" do

@@ -35,8 +35,8 @@ defmodule Uno.Action.RecycleDiscardPileTest do
 
       new_game = RecycleDiscardPile.map(game, [], %{})
 
-      assert Game.get_discard_pile(new_game) == [top]
-      assert Game.get_draw_pile(new_game) == rest
+      assert Game.discard_pile(new_game) == [top]
+      assert Game.draw_pile(new_game) == rest
     end
 
     test "replaces existing draw pile with recycled cards" do
@@ -49,8 +49,8 @@ defmodule Uno.Action.RecycleDiscardPileTest do
 
       new_game = RecycleDiscardPile.map(game, [], %{})
 
-      assert Game.get_discard_pile(new_game) == [top]
-      assert Game.get_draw_pile(new_game) == rest
+      assert Game.discard_pile(new_game) == [top]
+      assert Game.draw_pile(new_game) == rest
     end
 
     test "does not modify other game state" do
@@ -63,8 +63,8 @@ defmodule Uno.Action.RecycleDiscardPileTest do
 
       new_game = RecycleDiscardPile.map(game, [], %{})
 
-      assert Game.get_hands(new_game) == hands
-      assert Game.get_current_player(new_game) == 1
+      assert Game.hands(new_game) == hands
+      assert Game.current_player(new_game) == 1
     end
 
     test "handles discard pile with only one card (results in empty draw pile)" do
@@ -73,8 +73,8 @@ defmodule Uno.Action.RecycleDiscardPileTest do
 
       new_game = RecycleDiscardPile.map(game, [], %{})
 
-      assert Game.get_discard_pile(new_game) == [top]
-      assert Game.get_draw_pile(new_game) == []
+      assert Game.discard_pile(new_game) == [top]
+      assert Game.draw_pile(new_game) == []
     end
   end
 end

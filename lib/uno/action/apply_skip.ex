@@ -5,7 +5,7 @@ defmodule Uno.Action.ApplySkip do
 
   @impl Funx.Monad.Behaviour.Map
   def map(%Game{} = game, _opts, _env) do
-    top_card = Game.get_card_in_play(game)
+    top_card = Game.card_in_play(game)
 
     if Rules.skip_card?(top_card) do
       Game.next_player(game)

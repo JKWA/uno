@@ -7,7 +7,7 @@ defmodule Uno.HandTest do
 
   defp has_card?(cards, color, value) do
     Enum.any?(cards, fn c ->
-      Card.get_color(c) == color and Card.get_value(c) == value
+      Card.color(c) == color and Card.value(c) == value
     end)
   end
 
@@ -15,21 +15,21 @@ defmodule Uno.HandTest do
   # BASIC ACCESS AND STRUCTURE
   # ============================================================
 
-  describe "get_card/2" do
+  describe "card/2" do
     test "finds card by id" do
       c1 = card(:red, "5")
       c2 = card(:blue, "3")
       hand = [c1, c2]
 
-      assert Hand.get_card(hand, Card.get_id(c1)) == c1
-      assert Hand.get_card(hand, Card.get_id(c2)) == c2
+      assert Hand.card(hand, Card.id(c1)) == c1
+      assert Hand.card(hand, Card.id(c2)) == c2
     end
 
     test "raises an error when card not found" do
       hand = [card(:red, "5")]
 
       assert_raise RuntimeError, fn ->
-        Hand.get_card(hand, "nonexistent")
+        Hand.card(hand, "nonexistent")
       end
     end
   end
@@ -40,7 +40,7 @@ defmodule Uno.HandTest do
       c2 = card(:blue, "3")
       hand = [c1, c2]
 
-      result = Hand.remove_card(hand, Card.get_id(c1))
+      result = Hand.remove_card(hand, Card.id(c1))
 
       assert length(result) == 1
       assert hd(result) == c2
@@ -71,7 +71,7 @@ defmodule Uno.HandTest do
       sorted = Hand.sort(hand)
 
       # Cards should be sorted by color then value
-      assert Card.get_color(hd(sorted)) == :blue
+      assert Card.color(hd(sorted)) == :blue
     end
   end
 
@@ -130,8 +130,8 @@ defmodule Uno.HandTest do
 
       # Action card with color match should be first
       first = hd(playable)
-      assert Card.get_value(first) == "S"
-      assert Card.get_color(first) == :red
+      assert Card.value(first) == "S"
+      assert Card.color(first) == :red
     end
   end
 
@@ -151,14 +151,14 @@ defmodule Uno.HandTest do
       # The best card should come first
       first = hd(sorted)
 
-      assert Card.get_value(first) == "S"
-      assert Card.get_color(first) == :red
+      assert Card.value(first) == "S"
+      assert Card.color(first) == :red
 
       # The worst card should be last
       last = List.last(sorted)
 
-      assert Card.get_color(last) == :blue
-      assert Card.get_value(last) == "3"
+      assert Card.color(last) == :blue
+      assert Card.value(last) == "3"
     end
   end
 end

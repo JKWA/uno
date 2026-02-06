@@ -24,29 +24,29 @@ defmodule Uno.Bot do
 
   @spec decide(Game.t(), non_neg_integer()) :: decision()
   def decide(%Game{} = game, player_index) do
-    top_card = Game.get_card_in_play(game)
+    top_card = Game.card_in_play(game)
     hand = Enum.at(Lens.view!(game, Game.hands_lens()), player_index)
 
     hand
     |> Hand.split_playable(top_card)
-    |> decide_from_split(hand)
+    |> decide_from_split()
   end
 
-  @spec decide_from_split({[Card.t()], [Card.t()]}, [Card.t()]) :: decision()
-  defp decide_from_split({[], _}, _hand), do: :draw
+  @spec decide_from_split({[Card.t()], [Card.t()]}) :: decision()
+  defp decide_from_split({[], _}), do: :draw
 
-  defp decide_from_split({[best | _], _}, hand) do
+  defp decide_from_split({[best | _] = playable, not_playable}) do
     if Rules.any_wild_card?(best) do
-      {:play_wild, Card.get_id(best), pick_wild_color(hand)}
+      {:play_wild, Card.id(best), pick_wild_color(playable ++ not_playable)}
     else
-      {:play, Card.get_id(best)}
+      {:play, Card.id(best)}
     end
   end
 
   @spec pick_wild_color([Card.t()]) :: atom()
   defp pick_wild_color(hand) do
     hand
-    |> Enum.map(&Card.get_color/1)
+    |> Enum.map(&Card.color/1)
     |> case do
       [] ->
         Enum.random(Card.colors())

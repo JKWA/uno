@@ -40,9 +40,9 @@ defmodule Uno.Action.DrawCardTest do
 
       new_game = DrawCard.map(c1, opts, %{})
 
-      assert Game.get_draw_pile(new_game) == [c2]
-      assert Game.get_hands(new_game) == [[], [c1]]
-      assert Game.get_discard_pile(new_game) == []
+      assert Game.draw_pile(new_game) == [c2]
+      assert Game.hands(new_game) == [[], [c1]]
+      assert Game.discard_pile(new_game) == []
     end
 
     test "defaults to :hand when destination is not provided" do
@@ -57,8 +57,8 @@ defmodule Uno.Action.DrawCardTest do
 
       new_game = DrawCard.map(c1, opts, %{})
 
-      assert Game.get_draw_pile(new_game) == [c2]
-      assert Game.get_hands(new_game) == [[c1], []]
+      assert Game.draw_pile(new_game) == [c2]
+      assert Game.hands(new_game) == [[c1], []]
     end
   end
 
@@ -76,9 +76,9 @@ defmodule Uno.Action.DrawCardTest do
 
       new_game = DrawCard.map(c1, opts, %{})
 
-      assert Game.get_draw_pile(new_game) == [c2]
-      assert Game.get_discard_pile(new_game) == [c1]
-      assert Game.get_hands(new_game) == []
+      assert Game.draw_pile(new_game) == [c2]
+      assert Game.discard_pile(new_game) == [c1]
+      assert Game.hands(new_game) == []
     end
   end
 
@@ -95,7 +95,7 @@ defmodule Uno.Action.DrawCardTest do
 
       new_game = DrawCard.map(c1, opts, %{})
 
-      assert Game.get_hands(new_game) == [[c1, existing]]
+      assert Game.hands(new_game) == [[c1, existing]]
     end
 
     test "prepends card to an existing discard pile" do
@@ -111,7 +111,7 @@ defmodule Uno.Action.DrawCardTest do
 
       new_game = DrawCard.map(c1, opts, %{})
 
-      assert Game.get_discard_pile(new_game) == [c1, existing]
+      assert Game.discard_pile(new_game) == [c1, existing]
     end
   end
 end

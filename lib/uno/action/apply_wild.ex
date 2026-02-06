@@ -9,7 +9,7 @@ defmodule Uno.Action.ApplyWild do
 
   @impl Funx.Monad.Behaviour.Bind
   def bind(%Game{} = game, opts, _env) do
-    top_card = Game.get_card_in_play(game)
+    top_card = Game.card_in_play(game)
     color = Keyword.fetch!(opts, :color)
 
     if Rules.wild_card?(top_card) do

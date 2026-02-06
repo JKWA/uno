@@ -8,10 +8,10 @@ defmodule Uno.Action.ApplyDrawTwo do
 
   @impl Funx.Monad.Behaviour.Map
   def map(%Game{} = game, _opts, _env) do
-    top_card = Game.get_card_in_play(game)
+    top_card = Game.card_in_play(game)
 
     if Rules.draw_two_card?(top_card) do
-      next_player = Game.get_next_player_index(game)
+      next_player = Game.next_player_index(game)
 
       either game, as: :raise do
         bind {DrawForPlayer, player_index: next_player}

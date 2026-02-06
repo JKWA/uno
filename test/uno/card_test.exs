@@ -18,9 +18,9 @@ defmodule Uno.CardTest do
     test "creates a valid card with id, color, and value" do
       card = Card.new(:red, "5")
 
-      assert is_binary(Card.get_id(card))
-      assert Card.get_color(card) == :red
-      assert Card.get_value(card) == "5"
+      assert is_binary(Card.id(card))
+      assert Card.color(card) == :red
+      assert Card.value(card) == "5"
     end
 
     test "raises for invalid color" do
@@ -77,12 +77,12 @@ defmodule Uno.CardTest do
   # ============================================================
 
   describe "getters" do
-    test "get_id/1, get_color/1, get_value/1" do
+    test "id/1, color/1, value/1" do
       card = Card.new(:green, "D")
 
-      assert Card.get_color(card) == :green
-      assert Card.get_value(card) == "D"
-      assert is_binary(Card.get_id(card))
+      assert Card.color(card) == :green
+      assert Card.value(card) == "D"
+      assert is_binary(Card.id(card))
     end
   end
 

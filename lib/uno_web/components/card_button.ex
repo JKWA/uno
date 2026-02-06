@@ -8,7 +8,7 @@ defmodule UnoWeb.Components.CardButton do
   def card_button(assigns) do
     assigns =
       assigns
-      |> assign(:card_id, Card.get_id(assigns.card))
+      |> assign(:card_id, Card.id(assigns.card))
       |> assign(:outline?, String.contains?(assigns.class || "", "btn-outline"))
 
     ~H"""

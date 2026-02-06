@@ -18,13 +18,13 @@ defmodule Uno.Repo do
 
   @spec get(term()) :: Either.t(:not_found | any(), Game.t())
   def get(id) do
-    Store.get_item(@table_name, id)
+    Store.item(@table_name, id)
     |> map(fn data -> struct(Game, data) end)
   end
 
   @spec list() :: [Game.t()]
   def list do
-    Store.get_all_items(@table_name)
+    Store.all_items(@table_name)
     |> map(fn items -> Enum.map(items, fn item -> struct(Game, item) end) end)
     |> Either.get_or_else([])
   end

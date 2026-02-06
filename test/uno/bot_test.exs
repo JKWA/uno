@@ -54,7 +54,7 @@ defmodule Uno.BotTest do
         )
 
       assert {:play, card_id} = Bot.decide(g, 0)
-      assert card_id == Card.get_id(playable_card)
+      assert card_id == Card.id(playable_card)
     end
 
     test "returns {:play, card_id} for matching value" do
@@ -71,7 +71,7 @@ defmodule Uno.BotTest do
         )
 
       assert {:play, card_id} = Bot.decide(g, 0)
-      assert card_id == Card.get_id(playable_card)
+      assert card_id == Card.id(playable_card)
     end
 
     test "returns {:play_wild, card_id, color} for wild card" do
@@ -88,7 +88,7 @@ defmodule Uno.BotTest do
         )
 
       assert {:play_wild, card_id, color} = Bot.decide(g, 0)
-      assert card_id == Card.get_id(wild_card)
+      assert card_id == Card.id(wild_card)
       # Should pick green as it's most frequent
       assert color == :green
     end
@@ -107,7 +107,7 @@ defmodule Uno.BotTest do
         )
 
       assert {:play_wild, card_id, color} = Bot.decide(g, 0)
-      assert card_id == Card.get_id(wild_card)
+      assert card_id == Card.id(wild_card)
       # Should pick yellow as it's most frequent
       assert color == :yellow
     end
@@ -128,7 +128,7 @@ defmodule Uno.BotTest do
 
       # Skip with matching color should be preferred over wild
       assert {:play, card_id} = Bot.decide(g, 0)
-      assert card_id == Card.get_id(skip_card)
+      assert card_id == Card.id(skip_card)
     end
 
     test "decides for correct player index" do
@@ -150,7 +150,7 @@ defmodule Uno.BotTest do
 
       # Player 1 has a match
       assert {:play, card_id} = Bot.decide(g, 1)
-      assert card_id == Card.get_id(p1_card)
+      assert card_id == Card.id(p1_card)
     end
   end
 

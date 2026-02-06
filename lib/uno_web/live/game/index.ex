@@ -20,9 +20,9 @@ defmodule UnoWeb.Game.Index do
   end
 
   defp view_model(game) do
-    top_card = Game.get_card_in_play(game)
-    p1_hand = Game.get_hand(game, 0)
-    p2_hand = Game.get_hand(game, 1)
+    top_card = Game.card_in_play(game)
+    p1_hand = Game.hand(game, 0)
+    p2_hand = Game.hand(game, 1)
 
     %{
       top_card: top_card,
@@ -45,7 +45,7 @@ defmodule UnoWeb.Game.Index do
 
   def handle_event("play_card", %{"player" => player, "card_id" => card_id}, socket) do
     player_index = String.to_integer(player)
-    card = Game.get_card_in_hand(socket.assigns.game, player_index, card_id)
+    card = Game.card_in_hand(socket.assigns.game, player_index, card_id)
 
     if Rules.any_wild_card?(card) do
       {:noreply, push_event(socket, "prompt_wild_color", %{player: player, card_id: card_id})}

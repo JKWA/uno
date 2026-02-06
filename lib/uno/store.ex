@@ -26,8 +26,8 @@ defmodule Uno.Store do
     |> map(fn _ -> item end)
   end
 
-  @spec get_item(atom(), term()) :: Either.t(:not_found | any(), map())
-  def get_item(table, id) when is_atom(table) do
+  @spec item(atom(), term()) :: Either.t(:not_found | any(), map())
+  def item(table, id) when is_atom(table) do
     Either.from_try(fn ->
       :ets.lookup(table, id)
     end)
@@ -37,8 +37,8 @@ defmodule Uno.Store do
     end)
   end
 
-  @spec get_all_items(atom()) :: Either.t(any(), [map()])
-  def get_all_items(table) when is_atom(table) do
+  @spec all_items(atom()) :: Either.t(any(), [map()])
+  def all_items(table) when is_atom(table) do
     Either.from_try(fn ->
       :ets.tab2list(table)
     end)

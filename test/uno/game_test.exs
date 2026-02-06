@@ -69,8 +69,8 @@ defmodule Uno.GameTest do
 
       assert %Just{value: new_game} = result
 
-      assert Game.get_draw_pile(new_game) == [c2]
-      assert Game.get_discard_pile(new_game) == [c1]
+      assert Game.draw_pile(new_game) == [c2]
+      assert Game.discard_pile(new_game) == [c1]
     end
 
     test "returns Nothing when draw pile is empty" do
@@ -102,8 +102,8 @@ defmodule Uno.GameTest do
       result = Game.draw_for_player(game, 1)
 
       assert %Right{right: new_game} = result
-      assert Game.get_draw_pile(new_game) == []
-      assert Game.get_hands(new_game) == [[], [c1]]
+      assert Game.draw_pile(new_game) == []
+      assert Game.hands(new_game) == [[], [c1]]
     end
 
     test "draw_for_player returns Left when deck empty" do
@@ -124,7 +124,7 @@ defmodule Uno.GameTest do
 
       new_game = Game.next_player(game)
 
-      assert Game.get_current_player(new_game) == 0
+      assert Game.current_player(new_game) == 0
     end
 
     test "reverse_direction flip_cards direction" do
@@ -134,7 +134,7 @@ defmodule Uno.GameTest do
 
       new_game = Game.reverse_direction(game)
 
-      assert Game.get_direction(new_game) == -1
+      assert Game.direction(new_game) == -1
     end
   end
 
@@ -144,7 +144,7 @@ defmodule Uno.GameTest do
 
       %Right{right: result} = Game.deal(game, 2, 3)
 
-      hands = Game.get_hands(result)
+      hands = Game.hands(result)
 
       assert length(hands) == 2
       assert length(Enum.at(hands, 0)) == 3
@@ -160,10 +160,10 @@ defmodule Uno.GameTest do
         game_with_hands([[c1]])
         |> Map.put(:discard_pile, [])
 
-      new_game = Game.play_card(game, 0, Card.get_id(c1))
+      new_game = Game.play_card(game, 0, Card.id(c1))
 
-      assert Game.get_hands(new_game) == [[]]
-      assert Game.get_discard_pile(new_game) == [c1]
+      assert Game.hands(new_game) == [[]]
+      assert Game.discard_pile(new_game) == [c1]
     end
   end
 
@@ -177,8 +177,8 @@ defmodule Uno.GameTest do
 
       new_game = Game.set_wild_color(game, :red)
 
-      new_top = Game.get_card_in_play(new_game)
-      assert Card.get_color(new_top) == :red
+      new_top = Game.card_in_play(new_game)
+      assert Card.color(new_top) == :red
     end
   end
 
@@ -196,8 +196,8 @@ defmodule Uno.GameTest do
 
       assert %Right{right: new_game} = result
 
-      assert Game.get_discard_pile(new_game) == [top]
-      assert length(Game.get_draw_pile(new_game)) == 2
+      assert Game.discard_pile(new_game) == [top]
+      assert length(Game.draw_pile(new_game)) == 2
     end
 
     test "fails when there is only one card in discard pile" do
@@ -209,7 +209,7 @@ defmodule Uno.GameTest do
     end
   end
 
-  describe "get_card_in_play/1" do
+  describe "card_in_play/1" do
     test "returns top of discard pile" do
       c1 = card(:red, "1")
 
@@ -217,26 +217,26 @@ defmodule Uno.GameTest do
         game()
         |> Map.put(:discard_pile, [c1])
 
-      assert Game.get_card_in_play(game) == c1
+      assert Game.card_in_play(game) == c1
     end
   end
 
-  describe "get_hand/2" do
+  describe "hand/2" do
     test "returns the hand for the given player" do
       hand_0 = [card(:red, "1")]
       hand_1 = [card(:blue, "2")]
 
       game = game_with_hands([hand_0, hand_1])
 
-      assert Game.get_hand(game, 0) == hand_0
-      assert Game.get_hand(game, 1) == hand_1
+      assert Game.hand(game, 0) == hand_0
+      assert Game.hand(game, 1) == hand_1
     end
 
     test "raises when player has no hand" do
       game = game_with_hands([])
 
       assert_raise RuntimeError, fn ->
-        Game.get_hand(game, 0)
+        Game.hand(game, 0)
       end
     end
 
@@ -250,9 +250,9 @@ defmodule Uno.GameTest do
 
       game = game_with_hands([unsorted])
 
-      sorted = Game.get_hand(game, 0)
+      sorted = Game.hand(game, 0)
 
-      assert Enum.map(sorted, &{Card.get_color(&1), Card.get_value(&1)}) == [
+      assert Enum.map(sorted, &{Card.color(&1), Card.value(&1)}) == [
                {:blue, "1"},
                {:blue, "3"},
                {:red, "2"},

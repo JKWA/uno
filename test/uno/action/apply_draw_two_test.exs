@@ -27,8 +27,8 @@ defmodule Uno.Action.ApplyDrawTwoTest do
 
       new_game = ApplyDrawTwo.map(game, [], %{})
 
-      assert Game.get_hands(new_game) == [[], [], []]
-      assert Game.get_current_player(new_game) == 0
+      assert Game.hands(new_game) == [[], [], []]
+      assert Game.current_player(new_game) == 0
     end
 
     test "forces next player to draw two cards and skips them" do
@@ -41,10 +41,10 @@ defmodule Uno.Action.ApplyDrawTwoTest do
 
       new_game = ApplyDrawTwo.map(game, [], %{})
 
-      hands = Game.get_hands(new_game)
+      hands = Game.hands(new_game)
 
       assert length(Enum.at(hands, 1)) == 2
-      assert Game.get_current_player(new_game) == 1
+      assert Game.current_player(new_game) == 1
     end
 
     test "reshuffles discard pile when draw pile is empty" do
@@ -60,10 +60,10 @@ defmodule Uno.Action.ApplyDrawTwoTest do
 
       new_game = ApplyDrawTwo.map(game, [], %{})
 
-      hands = Game.get_hands(new_game)
+      hands = Game.hands(new_game)
 
       assert length(Enum.at(hands, 1)) == 2
-      assert Game.get_current_player(new_game) == 1
+      assert Game.current_player(new_game) == 1
     end
 
     test "raises when not enough cards even after reshuffle" do

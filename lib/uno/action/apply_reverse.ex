@@ -5,7 +5,7 @@ defmodule Uno.Action.ApplyReverse do
 
   @impl Funx.Monad.Behaviour.Map
   def map(%Game{} = game, _opts, _env) do
-    top_card = Game.get_card_in_play(game)
+    top_card = Game.card_in_play(game)
 
     cond do
       not Rules.reverse_card?(top_card) ->

@@ -30,7 +30,7 @@ defmodule Uno.Action.ApplyWildTest do
       result = ApplyWild.bind(game, [color: :green], %{})
 
       assert %Right{right: new_game} = result
-      assert Game.get_card_in_play(new_game).color == :red
+      assert Game.card_in_play(new_game).color == :red
     end
 
     test "sets wild color when color is provided" do
@@ -41,7 +41,7 @@ defmodule Uno.Action.ApplyWildTest do
       result = ApplyWild.bind(game, [color: :red], %{})
 
       assert %Right{right: new_game} = result
-      assert Game.get_card_in_play(new_game).color == :red
+      assert Game.card_in_play(new_game).color == :red
     end
 
     test "returns game unchanged for wild draw four cards" do
@@ -52,7 +52,7 @@ defmodule Uno.Action.ApplyWildTest do
       result = ApplyWild.bind(game, [color: :yellow], %{})
 
       assert %Right{right: new_game} = result
-      assert Game.get_card_in_play(new_game).color == :blue
+      assert Game.card_in_play(new_game).color == :blue
     end
 
     test "returns error when color is nil for wild card" do

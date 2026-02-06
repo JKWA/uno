@@ -74,18 +74,18 @@ defmodule Uno.Card do
     Lens.key(:value)
   end
 
-  @spec get_id(t()) :: String.t()
-  def get_id(%__MODULE__{} = card) do
+  @spec id(t()) :: String.t()
+  def id(%__MODULE__{} = card) do
     Lens.view!(card, id_lens())
   end
 
-  @spec get_color(t()) :: atom()
-  def get_color(%__MODULE__{} = card) do
+  @spec color(t()) :: atom()
+  def color(%__MODULE__{} = card) do
     Lens.view!(card, color_lens())
   end
 
-  @spec get_value(t()) :: String.t()
-  def get_value(%__MODULE__{} = card) do
+  @spec value(t()) :: String.t()
+  def value(%__MODULE__{} = card) do
     Lens.view!(card, value_lens())
   end
 

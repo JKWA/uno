@@ -13,9 +13,9 @@ defmodule Uno.Hand do
   # ============================================================
 
   # Invariant: card must exist in the hand
-  @spec get_card(t(), String.t()) :: Card.t()
-  def get_card(hand, card_id) when is_list(hand) do
-    Enum.find(hand, &(Card.get_id(&1) == card_id))
+  @spec card(t(), String.t()) :: Card.t()
+  def card(hand, card_id) when is_list(hand) do
+    Enum.find(hand, &(Card.id(&1) == card_id))
     |> Maybe.from_nil()
     |> Maybe.to_try!("invalid game state: card #{card_id} not in player's hand")
   end
@@ -23,7 +23,7 @@ defmodule Uno.Hand do
   # Idempotent: removing a card that is not in the hand has no effect
   @spec remove_card(t(), String.t()) :: t()
   def remove_card(hand, card_id) when is_list(hand) do
-    Enum.reject(hand, &(Card.get_id(&1) == card_id))
+    Enum.reject(hand, &(Card.id(&1) == card_id))
   end
 
   # Idempotent: adding a card that is already in the hand has no effect

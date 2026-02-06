@@ -39,12 +39,12 @@ defmodule Uno.Rules do
 
   @spec color_match?(Card.t(), Card.t()) :: boolean()
   def color_match?(%Card{} = card, %Card{} = top_card) do
-    Card.get_color(card) == Card.get_color(top_card)
+    Card.color(card) == Card.color(top_card)
   end
 
   @spec value_match?(Card.t(), Card.t()) :: boolean()
   def value_match?(%Card{} = card, %Card{} = top_card) do
-    Card.get_value(card) == Card.get_value(top_card)
+    Card.value(card) == Card.value(top_card)
   end
 
   # ============================================================
@@ -54,32 +54,32 @@ defmodule Uno.Rules do
 
   @spec skip_card?(Card.t()) :: boolean()
   def skip_card?(%Card{} = card) do
-    Card.get_value(card) == "S"
+    Card.value(card) == "S"
   end
 
   @spec reverse_card?(Card.t()) :: boolean()
   def reverse_card?(%Card{} = card) do
-    Card.get_value(card) == "R"
+    Card.value(card) == "R"
   end
 
   @spec draw_two_card?(Card.t()) :: boolean()
   def draw_two_card?(%Card{} = card) do
-    Card.get_value(card) == "D"
+    Card.value(card) == "D"
   end
 
   @spec action_card?(Card.t()) :: boolean()
   def action_card?(%Card{} = card) do
-    Card.get_value(card) in Card.actions()
+    Card.value(card) in Card.actions()
   end
 
   @spec wild_card?(Card.t()) :: boolean()
   def wild_card?(%Card{} = card) do
-    Card.get_value(card) == "W"
+    Card.value(card) == "W"
   end
 
   @spec wild_draw_four_card?(Card.t()) :: boolean()
   def wild_draw_four_card?(%Card{} = card) do
-    Card.get_value(card) == "W4"
+    Card.value(card) == "W4"
   end
 
   @spec any_wild_card?(Card.t()) :: boolean()
@@ -102,7 +102,7 @@ defmodule Uno.Rules do
 
   @spec two_player?(Game.t()) :: boolean()
   def two_player?(%Game{} = game) do
-    length(Game.get_hands(game)) == 2
+    length(Game.hands(game)) == 2
   end
 
   @spec must_say_uno?(Hand.t()) :: boolean()
@@ -110,7 +110,7 @@ defmodule Uno.Rules do
 
   @spec discard_pile_has_cards?(Game.t()) :: boolean()
   def discard_pile_has_cards?(%Game{} = game) do
-    length(Game.get_discard_pile(game)) > 1
+    length(Game.discard_pile(game)) > 1
   end
 
   # ============================================================
@@ -140,13 +140,13 @@ defmodule Uno.Rules do
 
   @spec game_over?(Game.t()) :: boolean()
   def game_over?(%Game{} = game) do
-    hands = Game.get_hands(game)
+    hands = Game.hands(game)
     Enum.any?(hands, &Enum.empty?/1)
   end
 
   @spec winner(Game.t()) :: non_neg_integer() | nil
   def winner(%Game{} = game) do
-    hands = Game.get_hands(game)
+    hands = Game.hands(game)
     Enum.find_index(hands, &Enum.empty?/1)
   end
 end

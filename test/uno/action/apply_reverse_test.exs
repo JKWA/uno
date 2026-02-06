@@ -27,8 +27,8 @@ defmodule Uno.Action.ApplyReverseTest do
 
       new_game = ApplyReverse.map(game, [], %{})
 
-      assert Game.get_direction(new_game) == 1
-      assert Game.get_current_player(new_game) == 0
+      assert Game.direction(new_game) == 1
+      assert Game.current_player(new_game) == 0
     end
 
     test "reverses direction in games with more than two players" do
@@ -38,7 +38,7 @@ defmodule Uno.Action.ApplyReverseTest do
 
       new_game = ApplyReverse.map(game, [], %{})
 
-      assert Game.get_direction(new_game) == -1
+      assert Game.direction(new_game) == -1
     end
 
     test "acts like skip in a two-player game" do
@@ -48,7 +48,7 @@ defmodule Uno.Action.ApplyReverseTest do
 
       new_game = ApplyReverse.map(game, [], %{})
 
-      assert Game.get_current_player(new_game) == 1
+      assert Game.current_player(new_game) == 1
     end
   end
 end

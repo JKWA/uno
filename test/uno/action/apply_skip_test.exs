@@ -27,7 +27,7 @@ defmodule Uno.Action.ApplySkipTest do
 
       new_game = ApplySkip.map(game, [], %{})
 
-      assert Game.get_current_player(new_game) == 0
+      assert Game.current_player(new_game) == 0
     end
 
     test "skips the next player" do
@@ -37,7 +37,7 @@ defmodule Uno.Action.ApplySkipTest do
 
       new_game = ApplySkip.map(game, [], %{})
 
-      assert Game.get_current_player(new_game) == 1
+      assert Game.current_player(new_game) == 1
     end
   end
 end

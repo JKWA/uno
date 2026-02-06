@@ -10,7 +10,7 @@ defmodule Uno.Action.ApplyWildDrawFour do
 
   @impl Funx.Monad.Behaviour.Bind
   def bind(%Game{} = game, opts, _env) do
-    top_card = Game.get_card_in_play(game)
+    top_card = Game.card_in_play(game)
     color = Keyword.fetch!(opts, :color)
 
     if Rules.wild_draw_four_card?(top_card) do
@@ -26,7 +26,7 @@ defmodule Uno.Action.ApplyWildDrawFour do
   end
 
   defp apply_draw_four(game) do
-    next_player = Game.get_next_player_index(game)
+    next_player = Game.next_player_index(game)
 
     either game, as: :raise do
       bind {DrawForPlayer, player_index: next_player}

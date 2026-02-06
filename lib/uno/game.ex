@@ -50,28 +50,28 @@ defmodule Uno.Game do
   @spec direction_lens() :: Lens.t()
   def direction_lens, do: Lens.key(:direction)
 
-  @spec get_draw_pile(t()) :: list(Card.t())
-  def get_draw_pile(%__MODULE__{} = game), do: Lens.view!(game, draw_pile_lens())
+  @spec draw_pile(t()) :: list(Card.t())
+  def draw_pile(%__MODULE__{} = game), do: Lens.view!(game, draw_pile_lens())
 
-  @spec get_discard_pile(t()) :: list(Card.t())
-  def get_discard_pile(%__MODULE__{} = game), do: Lens.view!(game, discard_pile_lens())
+  @spec discard_pile(t()) :: list(Card.t())
+  def discard_pile(%__MODULE__{} = game), do: Lens.view!(game, discard_pile_lens())
 
-  @spec get_hands(t()) :: list(Hand.t())
-  def get_hands(%__MODULE__{} = game), do: Lens.view!(game, hands_lens())
+  @spec hands(t()) :: list(Hand.t())
+  def hands(%__MODULE__{} = game), do: Lens.view!(game, hands_lens())
 
-  @spec get_current_player(t()) :: integer()
-  def get_current_player(%__MODULE__{} = game),
+  @spec current_player(t()) :: integer()
+  def current_player(%__MODULE__{} = game),
     do: Lens.view!(game, current_player_lens())
 
-  @spec get_direction(t()) :: integer()
-  def get_direction(%__MODULE__{} = game),
+  @spec direction(t()) :: integer()
+  def direction(%__MODULE__{} = game),
     do: Lens.view!(game, direction_lens())
 
   # Invariant: cannot have missing hand
-  @spec get_hand(t(), integer()) :: Hand.t()
-  def get_hand(%__MODULE__{} = game, player_index) do
+  @spec hand(t(), integer()) :: Hand.t()
+  def hand(%__MODULE__{} = game, player_index) do
     game
-    |> get_hands()
+    |> hands()
     |> Enum.at(player_index)
     |> Maybe.from_nil()
     |> Maybe.to_try!("invalid game state: missing hand for player #{player_index}")
@@ -79,25 +79,25 @@ defmodule Uno.Game do
   end
 
   # Invariant: Uno always has at least one card in the discard pile
-  @spec get_card_in_play(t()) :: Card.t()
-  def get_card_in_play(%__MODULE__{} = game) do
+  @spec card_in_play(t()) :: Card.t()
+  def card_in_play(%__MODULE__{} = game) do
     game
-    |> get_discard_pile()
+    |> discard_pile()
     |> head!()
   end
 
-  @spec get_card_in_hand(t(), integer(), String.t()) :: Card.t()
-  def get_card_in_hand(%__MODULE__{} = game, player_index, card_id) do
+  @spec card_in_hand(t(), integer(), String.t()) :: Card.t()
+  def card_in_hand(%__MODULE__{} = game, player_index, card_id) do
     game
-    |> get_hand(player_index)
-    |> Hand.get_card(card_id)
+    |> hand(player_index)
+    |> Hand.card(card_id)
   end
 
-  @spec get_next_player_index(t()) :: integer()
-  def get_next_player_index(%__MODULE__{} = game) do
-    direction = get_direction(game)
-    current = get_current_player(game)
-    num_players = get_hands(game) |> length()
+  @spec next_player_index(t()) :: integer()
+  def next_player_index(%__MODULE__{} = game) do
+    direction = direction(game)
+    current = current_player(game)
+    num_players = hands(game) |> length()
 
     Integer.mod(current + direction, num_players)
   end
@@ -181,7 +181,7 @@ defmodule Uno.Game do
 
   @spec flip_card(t()) :: Maybe.t(t())
   def flip_card(%__MODULE__{} = game) do
-    draw_pile = get_draw_pile(game)
+    draw_pile = draw_pile(game)
 
     maybe draw_pile do
       bind head()
@@ -191,13 +191,13 @@ defmodule Uno.Game do
 
   @spec draw(t()) :: Either.t(atom(), t())
   def draw(%__MODULE__{} = game) do
-    current = get_current_player(game)
+    current = current_player(game)
     draw_for_player(game, current)
   end
 
   @spec draw_for_player(t(), integer()) :: Either.t(atom(), t())
   def draw_for_player(%__MODULE__{} = game, player_index) do
-    draw_pile = get_draw_pile(game)
+    draw_pile = draw_pile(game)
 
     either draw_pile do
       bind fn d -> Either.lift_maybe(head(d), fn -> :draw_pile_empty end) end
@@ -211,7 +211,7 @@ defmodule Uno.Game do
 
   @spec next_player(t()) :: t()
   def next_player(%__MODULE__{} = game) do
-    Lens.set!(game, current_player_lens(), get_next_player_index(game))
+    Lens.set!(game, current_player_lens(), next_player_index(game))
   end
 
   @spec reverse_direction(t()) :: t()
@@ -243,7 +243,7 @@ defmodule Uno.Game do
 
   @spec play_card(t(), integer(), String.t()) :: t()
   def play_card(%__MODULE__{} = game, player_index, card_id) do
-    card = get_card_in_hand(game, player_index, card_id)
+    card = card_in_hand(game, player_index, card_id)
 
     game
     |> Lens.over!(hands_lens(), fn hands ->

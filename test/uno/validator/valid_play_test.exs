@@ -24,7 +24,7 @@ defmodule Uno.Validator.ValidPlayTest do
       hand_card = card(:red, "2")
       g = game(top, [hand_card])
 
-      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.get_id(hand_card)], %{})
+      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.id(hand_card)], %{})
 
       assert Either.right?(result)
     end
@@ -34,7 +34,7 @@ defmodule Uno.Validator.ValidPlayTest do
       hand_card = card(:blue, "5")
       g = game(top, [hand_card])
 
-      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.get_id(hand_card)], %{})
+      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.id(hand_card)], %{})
 
       assert Either.right?(result)
     end
@@ -44,7 +44,7 @@ defmodule Uno.Validator.ValidPlayTest do
       wild = card(:blue, "W")
       g = game(top, [wild])
 
-      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.get_id(wild)], %{})
+      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.id(wild)], %{})
 
       assert Either.right?(result)
     end
@@ -54,7 +54,7 @@ defmodule Uno.Validator.ValidPlayTest do
       wild4 = card(:blue, "W4")
       g = game(top, [wild4])
 
-      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.get_id(wild4)], %{})
+      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.id(wild4)], %{})
 
       assert Either.right?(result)
     end
@@ -64,7 +64,7 @@ defmodule Uno.Validator.ValidPlayTest do
       hand_card = card(:blue, "2")
       g = game(top, [hand_card])
 
-      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.get_id(hand_card)], %{})
+      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.id(hand_card)], %{})
 
       assert Either.left?(result)
     end
@@ -74,7 +74,7 @@ defmodule Uno.Validator.ValidPlayTest do
       hand_card = card(:blue, "2")
       g = game(top, [hand_card])
 
-      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.get_id(hand_card)], %{})
+      result = ValidPlay.validate(g, [player_index: 0, card_id: Card.id(hand_card)], %{})
 
       assert %Funx.Monad.Either.Left{left: error} = result
       assert error.errors == ["card must match by color or value"]

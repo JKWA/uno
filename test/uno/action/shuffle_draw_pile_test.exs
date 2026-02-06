@@ -33,8 +33,8 @@ defmodule Uno.Action.ShuffleDrawPileTest do
       new_game = ShuffleDrawPile.map(game, [], %{})
 
       # The draw pile should contain the same cards
-      assert Enum.sort(Game.get_draw_pile(new_game)) == Enum.sort(cards)
-      assert length(Game.get_draw_pile(new_game)) == 9
+      assert Enum.sort(Game.draw_pile(new_game)) == Enum.sort(cards)
+      assert length(Game.draw_pile(new_game)) == 9
     end
 
     test "does not modify other game state" do
@@ -46,9 +46,9 @@ defmodule Uno.Action.ShuffleDrawPileTest do
 
       new_game = ShuffleDrawPile.map(game, [], %{})
 
-      assert Game.get_discard_pile(new_game) == discard
-      assert Game.get_hands(new_game) == hands
-      assert Game.get_current_player(new_game) == 1
+      assert Game.discard_pile(new_game) == discard
+      assert Game.hands(new_game) == hands
+      assert Game.current_player(new_game) == 1
     end
 
     test "handles empty draw pile" do
@@ -56,7 +56,7 @@ defmodule Uno.Action.ShuffleDrawPileTest do
 
       new_game = ShuffleDrawPile.map(game, [], %{})
 
-      assert Game.get_draw_pile(new_game) == []
+      assert Game.draw_pile(new_game) == []
     end
 
     test "handles single card draw pile" do
@@ -65,7 +65,7 @@ defmodule Uno.Action.ShuffleDrawPileTest do
 
       new_game = ShuffleDrawPile.map(game, [], %{})
 
-      assert Game.get_draw_pile(new_game) == [c1]
+      assert Game.draw_pile(new_game) == [c1]
     end
   end
 end

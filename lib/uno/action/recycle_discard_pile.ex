@@ -6,7 +6,7 @@ defmodule Uno.Action.RecycleDiscardPile do
 
   @impl Funx.Monad.Behaviour.Map
   def map(%Game{} = game, _opts, _env) do
-    [top | rest] = Game.get_discard_pile(game)
+    [top | rest] = Game.discard_pile(game)
 
     game
     |> Lens.set!(Game.discard_pile_lens(), [top])
