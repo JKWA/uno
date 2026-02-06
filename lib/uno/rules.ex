@@ -1,6 +1,7 @@
 defmodule Uno.Rules do
-  alias Funx.Optics.Lens
+  alias Funx.Predicate.Eq
   alias Uno.{Card, Hand, Game}
+
   use Funx.Validate
   use Funx.Eq
   use Funx.Ord
@@ -25,7 +26,15 @@ defmodule Uno.Rules do
 
   @spec playable?(Card.t(), Card.t()) :: boolean()
   def playable?(%Card{} = hand_card, %Card{} = top_card) do
-    any_wild_card?(hand_card) or Funx.Eq.eq?(hand_card, top_card, playable_card_eq())
+    playable_pred =
+      pred do
+        any do
+          &any_wild_card?/1
+          {Eq, value: top_card, eq: playable_card_eq()}
+        end
+      end
+
+    playable_pred.(hand_card)
   end
 
   @spec color_match?(Card.t(), Card.t()) :: boolean()
@@ -65,7 +74,7 @@ defmodule Uno.Rules do
 
   @spec wild_card?(Card.t()) :: boolean()
   def wild_card?(%Card{} = card) do
-    Card.get_value(card) in ["W"]
+    Card.get_value(card) == "W"
   end
 
   @spec wild_draw_four_card?(Card.t()) :: boolean()
@@ -93,7 +102,7 @@ defmodule Uno.Rules do
 
   @spec two_player?(Game.t()) :: boolean()
   def two_player?(%Game{} = game) do
-    length(Lens.view!(game, Game.hands_lens())) == 2
+    length(Game.get_hands(game)) == 2
   end
 
   @spec must_say_uno?(Hand.t()) :: boolean()
@@ -101,7 +110,7 @@ defmodule Uno.Rules do
 
   @spec discard_pile_has_cards?(Game.t()) :: boolean()
   def discard_pile_has_cards?(%Game{} = game) do
-    length(Lens.view!(game, Game.discard_pile_lens())) > 1
+    length(Game.get_discard_pile(game)) > 1
   end
 
   # ============================================================

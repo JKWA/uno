@@ -71,7 +71,7 @@ defmodule Uno.MixProject do
       {:dialyxir, "~> 1.4", only: :dev, runtime: false},
       {:castore, "~> 1.0", only: [:dev, :test]},
       {:excoveralls, "~> 0.18", only: [:dev, :test], runtime: false},
-      {:funx, "0.8.2"}
+      {:funx, git: "https://github.com/JKWA/funx.git", ref: "cfd77b2"}
     ]
   end
 
