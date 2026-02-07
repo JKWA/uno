@@ -1,9 +1,10 @@
 defmodule Uno.GameServer do
   use GenServer
+  use Funx.Monad.Either
 
-  alias Uno.{Bot, Rules, Service}
-
-  @game_id "1"
+  alias Funx.Validator.Not
+  alias Uno.{Bot, Repo, Rules, Service}
+  alias Uno.Validator.{BotTurn, GameOver}
 
   # ============================================================
   # CLIENT API
@@ -29,70 +30,96 @@ defmodule Uno.GameServer do
     GenServer.call(__MODULE__, :new_game)
   end
 
+  def bots do
+    GenServer.call(__MODULE__, :bots)
+  end
+
+  def toggle_bot(player_index) do
+    GenServer.call(__MODULE__, {:toggle_bot, player_index})
+  end
+
   # ============================================================
   # SERVER CALLBACKS
   # ============================================================
 
   @impl true
   def init(:ok) do
-    game =
-      case Service.get(@game_id) do
-        {:ok, existing} -> existing
-        {:error, _} -> Service.create()
+    game = Service.create()
+    state = %{game_id: game.id, bots: MapSet.new([1])}
+    schedule_bot_if_needed(game, state.bots)
+    {:ok, state}
+  end
+
+  @impl true
+  def handle_call(:state, _from, state) do
+    {:ok, game} = Service.get(state.game_id)
+    {:reply, game, state}
+  end
+
+  def handle_call({:play_card, player_index, card_id, color}, _from, state) do
+    result =
+      either state.game_id, as: :tuple do
+        bind Service.play_card(player_index, card_id, color)
+        tap schedule_bot_if_needed(state.bots)
       end
 
-    schedule_bot_if_needed(game)
-    {:ok, game.id}
+    {:reply, result, state}
   end
 
-  @impl true
-  def handle_call(:state, _from, game_id) do
-    {:ok, game} = Service.get(game_id)
-    {:reply, game, game_id}
+  def handle_call({:draw_card, player_index}, _from, state) do
+    result =
+      either state.game_id, as: :tuple do
+        bind Service.draw_card(player_index)
+        tap schedule_bot_if_needed(state.bots)
+      end
+
+    {:reply, result, state}
   end
 
-  def handle_call({:play_card, player_index, card_id, color}, _from, game_id) do
-    case Service.play_card(game_id, player_index, card_id, color) do
-      {:ok, game} ->
-        schedule_bot_if_needed(game)
-        {:reply, {:ok, game}, game_id}
-
-      error ->
-        {:reply, error, game_id}
-    end
-  end
-
-  def handle_call({:draw_card, player_index}, _from, game_id) do
-    case Service.draw_card(game_id, player_index) do
-      {:ok, game} ->
-        schedule_bot_if_needed(game)
-        {:reply, {:ok, game}, game_id}
-
-      error ->
-        {:reply, error, game_id}
-    end
-  end
-
-  def handle_call(:new_game, _from, _game_id) do
+  def handle_call(:new_game, _from, state) do
     game = Service.create()
-    schedule_bot_if_needed(game)
-    {:reply, game, game.id}
+    state = %{state | game_id: game.id}
+    schedule_bot_if_needed(game, state.bots)
+    {:reply, game, state}
+  end
+
+  def handle_call(:bots, _from, state) do
+    {:reply, state.bots, state}
+  end
+
+  def handle_call({:toggle_bot, player_index}, _from, state) do
+    bots = Bot.toggle(state.bots, player_index)
+
+    state = %{state | bots: bots}
+
+    either state.game_id do
+      bind Repo.get()
+      tap schedule_bot_if_needed(bots)
+    end
+
+    Phoenix.PubSub.broadcast(Uno.PubSub, "game:current", {:bots_updated, bots})
+    {:reply, bots, state}
   end
 
   @impl true
-  def handle_info(:bot_turn, game_id) do
-    with {:ok, game} <- Service.get(game_id),
-         true <- game.current_player == 1 and not Rules.game_over?(game),
-         {:ok, updated} <- Bot.take_turn(game, 1) do
-      schedule_bot_if_needed(updated)
-      {:noreply, game_id}
-    else
-      _ -> {:noreply, game_id}
+  def handle_info(:bot_turn, state) do
+    either state.game_id, as: :tuple do
+      bind Repo.get()
+
+      validate [
+        {BotTurn, bots: state.bots},
+        {Not, validator: GameOver, message: fn -> "game is over" end}
+      ]
+
+      bind Bot.take_turn()
+      tap schedule_bot_if_needed(state.bots)
     end
+
+    {:noreply, state}
   end
 
-  defp schedule_bot_if_needed(game) do
-    if game.current_player == 1 and not Rules.game_over?(game) do
+  defp schedule_bot_if_needed(game, bots) do
+    if Rules.bot_turn?(game, bots) and not Rules.game_over?(game) do
       Process.send_after(self(), :bot_turn, 1200)
     end
   end

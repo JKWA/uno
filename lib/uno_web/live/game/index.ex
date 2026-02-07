@@ -10,9 +10,12 @@ defmodule UnoWeb.Game.Index do
     game = GameServer.state()
     Phoenix.PubSub.subscribe(Uno.PubSub, "game:current")
 
+    bots = GameServer.bots()
+
     {:ok,
      socket
      |> assign(game: game)
+     |> assign_bots(bots)
      |> assign_view()
      |> print_game_state()}
   end
@@ -29,9 +32,9 @@ defmodule UnoWeb.Game.Index do
     %{
       top_card: top_card,
       p1_hand: p1_hand,
-      p1_playable_ids: playable_ids(p1_hand, top_card),
+      p1_playable_ids: Rules.playable_ids(p1_hand, top_card),
       p2_hand: p2_hand,
-      p2_playable_ids: playable_ids(p2_hand, top_card),
+      p2_playable_ids: Rules.playable_ids(p2_hand, top_card),
       p1_uno: Rules.must_say_uno?(p1_hand),
       p2_uno: Rules.must_say_uno?(p2_hand),
       game_over: Rules.game_over?(game),
@@ -39,10 +42,8 @@ defmodule UnoWeb.Game.Index do
     }
   end
 
-  defp playable_ids(hand, top_card) do
-    hand
-    |> Enum.filter(&Rules.playable?(&1, top_card))
-    |> MapSet.new(& &1.id)
+  defp assign_bots(socket, bots) do
+    assign(socket, p1_bot: MapSet.member?(bots, 0), p2_bot: MapSet.member?(bots, 1))
   end
 
   def handle_event("play_card", %{"player" => player, "card_id" => card_id}, socket) do
@@ -79,6 +80,13 @@ defmodule UnoWeb.Game.Index do
     |> handle_result(socket)
   end
 
+  def handle_event("toggle_bot", %{"player" => player}, socket) do
+    player_index = String.to_integer(player)
+    bots = GameServer.toggle_bot(player_index)
+
+    {:noreply, assign_bots(socket, bots)}
+  end
+
   def handle_event("new_game", _params, socket) do
     game = GameServer.new_game()
 
@@ -87,6 +95,10 @@ defmodule UnoWeb.Game.Index do
      |> put_flash(:info, "New game started")
      |> assign(game: game)
      |> assign_view()}
+  end
+
+  def handle_info({:bots_updated, bots}, socket) do
+    {:noreply, assign_bots(socket, bots)}
   end
 
   def handle_info({:game_updated, game}, socket) do

@@ -19,9 +19,22 @@ defmodule UnoWeb.Components.PlayerPanel do
             <% end %>
           </div>
 
-          <%= if @uno? do %>
-            <div class="badge badge-accent badge-lg">UNO!</div>
-          <% end %>
+          <div class="flex items-center gap-3">
+            <%= if @uno? do %>
+              <div class="badge badge-accent badge-lg">UNO!</div>
+            <% end %>
+
+            <label class="label cursor-pointer gap-2">
+              <span class="label-text text-sm">auto</span>
+              <input
+                type="checkbox"
+                class="toggle toggle-sm toggle-primary"
+                checked={@bot?}
+                phx-click="toggle_bot"
+                phx-value-player={@player}
+              />
+            </label>
+          </div>
         </div>
 
         <div class="bg-base-100/50 rounded-lg p-3">

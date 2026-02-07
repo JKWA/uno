@@ -105,6 +105,11 @@ defmodule Uno.Rules do
     length(Game.hands(game)) == 2
   end
 
+  @spec bot_turn?(Game.t(), MapSet.t()) :: boolean()
+  def bot_turn?(%Game{} = game, bots) do
+    MapSet.member?(bots, Game.current_player(game))
+  end
+
   @spec must_say_uno?(Hand.t()) :: boolean()
   def must_say_uno?(hand) when is_list(hand), do: length(hand) == 1
 
@@ -137,6 +142,13 @@ defmodule Uno.Rules do
   # END OF GAME RULES
   # When the game ends and who wins
   # ============================================================
+
+  @spec playable_ids(Hand.t(), Card.t()) :: MapSet.t()
+  def playable_ids(hand, top_card) do
+    hand
+    |> Enum.filter(&playable?(&1, top_card))
+    |> MapSet.new(& &1.id)
+  end
 
   @spec game_over?(Game.t()) :: boolean()
   def game_over?(%Game{} = game) do

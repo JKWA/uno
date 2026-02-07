@@ -2,14 +2,25 @@ defmodule Uno.Bot do
   alias Funx.Optics.Lens
   alias Uno.{Card, Game, Hand, Rules, Service}
 
+  @spec toggle(MapSet.t(), non_neg_integer()) :: MapSet.t()
+  def toggle(bots, player_index) do
+    if MapSet.member?(bots, player_index) do
+      MapSet.delete(bots, player_index)
+    else
+      MapSet.put(bots, player_index)
+    end
+  end
+
   @type decision ::
           :draw
           | {:play, String.t()}
           | {:play_wild, String.t(), atom()}
 
-  @spec take_turn(Game.t(), non_neg_integer()) ::
+  @spec take_turn(Game.t()) ::
           {:ok, Game.t()} | {:error, any()}
-  def take_turn(%Game{} = game, player_index) do
+  def take_turn(%Game{} = game) do
+    player_index = Game.current_player(game)
+
     case decide(game, player_index) do
       {:play, card_id} ->
         Service.play_card(game.id, player_index, card_id)
