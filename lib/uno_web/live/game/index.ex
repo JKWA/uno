@@ -4,11 +4,11 @@ defmodule UnoWeb.Game.Index do
   import UnoWeb.Components.PlayerPanel
   import UnoWeb.Components.CardFace
 
-  alias Uno.{Bot, Game, Rules, Service}
+  alias Uno.{Game, GameServer, Rules}
 
   def mount(_params, _session, socket) do
-    game = Service.create()
-    Phoenix.PubSub.subscribe(Uno.PubSub, "game:#{game.id}")
+    game = GameServer.state()
+    Phoenix.PubSub.subscribe(Uno.PubSub, "game:current")
 
     {:ok,
      socket
@@ -52,7 +52,7 @@ defmodule UnoWeb.Game.Index do
     if Rules.any_wild_card?(card) do
       {:noreply, push_event(socket, "prompt_wild_color", %{player: player, card_id: card_id})}
     else
-      Service.play_card(socket.assigns.game.id, player_index, card_id)
+      GameServer.play_card(player_index, card_id)
       |> handle_result(socket)
     end
   end
@@ -68,26 +68,25 @@ defmodule UnoWeb.Game.Index do
     # We are doing this to illustrate downstream validation.
     color_atom = if color, do: String.to_atom(color), else: nil
 
-    Service.play_card(socket.assigns.game.id, player_index, card_id, color_atom)
+    GameServer.play_card(player_index, card_id, color_atom)
     |> handle_result(socket)
   end
 
   def handle_event("draw_card", %{"player" => player}, socket) do
     player_index = String.to_integer(player)
 
-    Service.draw_card(socket.assigns.game.id, player_index)
+    GameServer.draw_card(player_index)
     |> handle_result(socket)
   end
 
   def handle_event("new_game", _params, socket) do
-    game = Service.create()
+    game = GameServer.new_game()
 
     {:noreply,
      socket
      |> put_flash(:info, "New game started")
      |> assign(game: game)
-     |> assign_view()
-     |> maybe_bot()}
+     |> assign_view()}
   end
 
   def handle_info({:game_updated, game}, socket) do
@@ -95,19 +94,7 @@ defmodule UnoWeb.Game.Index do
      socket
      |> assign(game: game)
      |> assign_view()
-     |> print_game_state()
-     |> maybe_bot()}
-  end
-
-  def handle_info(:bot_turn, socket) do
-    game = socket.assigns.game
-
-    if game.current_player == 1 and not Rules.game_over?(game) do
-      Bot.take_turn(game, 1)
-      |> handle_result(socket)
-    else
-      {:noreply, socket}
-    end
+     |> print_game_state()}
   end
 
   defp handle_result({:ok, game}, socket) do
@@ -115,22 +102,11 @@ defmodule UnoWeb.Game.Index do
      socket
      |> assign(game: game)
      |> assign_view()
-     |> print_game_state()
-     |> maybe_bot()}
+     |> print_game_state()}
   end
 
   defp handle_result({:error, reason}, socket) do
     {:noreply, put_flash(socket, :error, format_error(reason))}
-  end
-
-  defp maybe_bot(socket) do
-    game = socket.assigns.game
-
-    if game.current_player == 1 and not Rules.game_over?(game) do
-      Process.send_after(self(), :bot_turn, 1200)
-    end
-
-    socket
   end
 
   defp print_game_state(socket) do

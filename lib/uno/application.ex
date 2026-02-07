@@ -13,8 +13,7 @@ defmodule Uno.Application do
       UnoWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:uno, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Uno.PubSub},
-      # Start a worker by calling: Uno.Worker.start_link(arg)
-      # {Uno.Worker, arg},
+      Uno.GameServer,
       # Start to serve requests, typically the last entry
       UnoWeb.Endpoint
     ]

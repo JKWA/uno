@@ -32,6 +32,7 @@ defmodule Uno.Service do
       bind Game.deal(2, 7)
       bind Game.flip_card()
       bind Repo.save()
+      tap Broadcast
     end
   end
 
