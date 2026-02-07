@@ -8,11 +8,13 @@ defmodule UnoWeb.Game.Index do
 
   def mount(_params, _session, socket) do
     game = Service.create()
+    Phoenix.PubSub.subscribe(Uno.PubSub, "game:#{game.id}")
 
     {:ok,
      socket
      |> assign(game: game)
-     |> assign_view()}
+     |> assign_view()
+     |> print_game_state()}
   end
 
   defp assign_view(socket) do
@@ -88,6 +90,15 @@ defmodule UnoWeb.Game.Index do
      |> maybe_bot()}
   end
 
+  def handle_info({:game_updated, game}, socket) do
+    {:noreply,
+     socket
+     |> assign(game: game)
+     |> assign_view()
+     |> print_game_state()
+     |> maybe_bot()}
+  end
+
   def handle_info(:bot_turn, socket) do
     game = socket.assigns.game
 
@@ -104,6 +115,7 @@ defmodule UnoWeb.Game.Index do
      socket
      |> assign(game: game)
      |> assign_view()
+     |> print_game_state()
      |> maybe_bot()}
   end
 
@@ -119,6 +131,11 @@ defmodule UnoWeb.Game.Index do
     end
 
     socket
+  end
+
+  defp print_game_state(socket) do
+    game = socket.assigns.game
+    push_event(socket, "print_game_state", %{game: inspect(game, pretty: true)})
   end
 
   defp format_error(%Funx.Errors.ValidationError{errors: errors}) do

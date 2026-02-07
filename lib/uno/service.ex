@@ -4,7 +4,7 @@ defmodule Uno.Service do
 
   alias Funx.Validator.Not
 
-  alias Uno.{Game, Repo}
+  alias Uno.{Broadcast, Game, Repo}
 
   alias Uno.Action.{
     ApplyDrawTwo,
@@ -57,6 +57,7 @@ defmodule Uno.Service do
 
       bind {DrawForPlayer, player_index: player_index}
       bind Repo.save()
+      tap Broadcast
     end
   end
 
@@ -80,6 +81,7 @@ defmodule Uno.Service do
       map ApplyDrawTwo
       map Game.next_player()
       bind Repo.save()
+      tap Broadcast
     end
   end
 end

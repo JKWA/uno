@@ -30,6 +30,9 @@ const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute
 const Hooks = {
   WildCardPrompt: {
     mounted() {
+      this.handleEvent("print_game_state", (state) => {
+        console.log(state.game)
+      })
       this.handleEvent("prompt_wild_color", ({player, card_id}) => {
         const color = prompt("Choose a color (red, blue, green, yellow):")
         this.pushEvent("play_wild", {
