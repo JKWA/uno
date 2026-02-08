@@ -13,7 +13,8 @@ defmodule Uno.Application do
       UnoWeb.Telemetry,
       {DNSCluster, query: Application.get_env(:uno, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Uno.PubSub},
-      Uno.GameServer,
+      {Registry, keys: :unique, name: Uno.GameRegistry},
+      {DynamicSupervisor, name: Uno.GameSupervisor, strategy: :one_for_one},
       # Start to serve requests, typically the last entry
       UnoWeb.Endpoint
     ]

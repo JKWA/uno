@@ -6,18 +6,29 @@ defmodule UnoWeb.Game.Index do
 
   alias Uno.{Game, GameServer, Rules}
 
-  def mount(_params, _session, socket) do
-    game = GameServer.state()
-    Phoenix.PubSub.subscribe(Uno.PubSub, "game:current")
+  def mount(%{"id" => id}, _session, socket) do
+    game_id = String.to_integer(id)
 
-    bots = GameServer.bots()
+    case GameServer.ensure_started(game_id) do
+      :ok ->
+        game = GameServer.state(game_id)
+        Phoenix.PubSub.subscribe(Uno.PubSub, "game:#{game_id}")
 
-    {:ok,
-     socket
-     |> assign(game: game)
-     |> assign_bots(bots)
-     |> assign_view()
-     |> print_game_state()}
+        bots = GameServer.bots(game_id)
+
+        {:ok,
+         socket
+         |> assign(game_id: game_id, game: game)
+         |> assign_bots(bots)
+         |> assign_view()
+         |> print_game_state()}
+
+      {:error, :not_found} ->
+        {:ok,
+         socket
+         |> put_flash(:error, "Game not found")
+         |> push_navigate(to: ~p"/")}
+    end
   end
 
   defp assign_view(socket) do
@@ -53,7 +64,7 @@ defmodule UnoWeb.Game.Index do
     if Rules.any_wild_card?(card) do
       {:noreply, push_event(socket, "prompt_wild_color", %{player: player, card_id: card_id})}
     else
-      GameServer.play_card(player_index, card_id)
+      GameServer.play_card(socket.assigns.game_id, player_index, card_id)
       |> handle_result(socket)
     end
   end
@@ -69,32 +80,33 @@ defmodule UnoWeb.Game.Index do
     # We are doing this to illustrate downstream validation.
     color_atom = if color, do: String.to_atom(color), else: nil
 
-    GameServer.play_card(player_index, card_id, color_atom)
+    GameServer.play_card(socket.assigns.game_id, player_index, card_id, color_atom)
     |> handle_result(socket)
   end
 
   def handle_event("draw_card", %{"player" => player}, socket) do
     player_index = String.to_integer(player)
 
-    GameServer.draw_card(player_index)
+    GameServer.draw_card(socket.assigns.game_id, player_index)
     |> handle_result(socket)
   end
 
   def handle_event("toggle_bot", %{"player" => player}, socket) do
     player_index = String.to_integer(player)
-    bots = GameServer.toggle_bot(player_index)
+    bots = GameServer.toggle_bot(socket.assigns.game_id, player_index)
 
     {:noreply, assign_bots(socket, bots)}
   end
 
-  def handle_event("new_game", _params, socket) do
-    game = GameServer.new_game()
+  def handle_event("redeal", _params, socket) do
+    game = GameServer.redeal(socket.assigns.game_id)
 
     {:noreply,
      socket
-     |> put_flash(:info, "New game started")
      |> assign(game: game)
-     |> assign_view()}
+     #  |> assign_bots(MapSet.new([1]))
+     |> assign_view()
+     |> print_game_state()}
   end
 
   def handle_info({:bots_updated, bots}, socket) do

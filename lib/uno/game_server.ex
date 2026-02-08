@@ -10,32 +10,61 @@ defmodule Uno.GameServer do
   # CLIENT API
   # ============================================================
 
-  def start_link(_opts) do
-    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(game_id) do
+    GenServer.start_link(__MODULE__, game_id, name: via(game_id))
   end
 
-  def state do
-    GenServer.call(__MODULE__, :state)
+  def start_game do
+    game = Service.create()
+    {:ok, _pid} = DynamicSupervisor.start_child(Uno.GameSupervisor, {__MODULE__, game.id})
+    {:ok, game}
   end
 
-  def play_card(player_index, card_id, color \\ nil) do
-    GenServer.call(__MODULE__, {:play_card, player_index, card_id, color})
+  def ensure_started(game_id) do
+    case Registry.lookup(Uno.GameRegistry, game_id) do
+      [{_pid, _}] ->
+        :ok
+
+      [] ->
+        case Service.get(game_id) do
+          {:ok, _game} ->
+            case DynamicSupervisor.start_child(Uno.GameSupervisor, {__MODULE__, game_id}) do
+              {:ok, _pid} -> :ok
+              {:error, {:already_started, _pid}} -> :ok
+            end
+
+          {:error, _} ->
+            {:error, :not_found}
+        end
+    end
   end
 
-  def draw_card(player_index) do
-    GenServer.call(__MODULE__, {:draw_card, player_index})
+  def state(game_id) do
+    GenServer.call(via(game_id), :state)
   end
 
-  def new_game do
-    GenServer.call(__MODULE__, :new_game)
+  def play_card(game_id, player_index, card_id, color \\ nil) do
+    GenServer.call(via(game_id), {:play_card, player_index, card_id, color})
   end
 
-  def bots do
-    GenServer.call(__MODULE__, :bots)
+  def draw_card(game_id, player_index) do
+    GenServer.call(via(game_id), {:draw_card, player_index})
   end
 
-  def toggle_bot(player_index) do
-    GenServer.call(__MODULE__, {:toggle_bot, player_index})
+  def bots(game_id) do
+    GenServer.call(via(game_id), :bots)
+  end
+
+  def redeal(game_id) do
+    GenServer.call(via(game_id), :redeal)
+  end
+
+  def toggle_bot(game_id, player_index) do
+    GenServer.call(via(game_id), {:toggle_bot, player_index})
+  end
+
+  defp via(game_id) do
+    {:via, Registry, {Uno.GameRegistry, game_id}}
   end
 
   # ============================================================
@@ -43,9 +72,9 @@ defmodule Uno.GameServer do
   # ============================================================
 
   @impl true
-  def init(:ok) do
-    game = Service.create()
-    state = %{game_id: game.id, bots: MapSet.new([1])}
+  def init(game_id) do
+    {:ok, game} = Service.get(game_id)
+    state = %{game_id: game_id, bots: MapSet.new([1])}
     schedule_bot_if_needed(game, state.bots)
     {:ok, state}
   end
@@ -76,9 +105,9 @@ defmodule Uno.GameServer do
     {:reply, result, state}
   end
 
-  def handle_call(:new_game, _from, state) do
-    game = Service.create()
-    state = %{state | game_id: game.id}
+  def handle_call(:redeal, _from, state) do
+    game = Service.redeal(state.game_id)
+    # state = %{state | bots: MapSet.new([1])}
     schedule_bot_if_needed(game, state.bots)
     {:reply, game, state}
   end
@@ -97,7 +126,7 @@ defmodule Uno.GameServer do
       tap schedule_bot_if_needed(bots)
     end
 
-    Phoenix.PubSub.broadcast(Uno.PubSub, "game:current", {:bots_updated, bots})
+    Phoenix.PubSub.broadcast(Uno.PubSub, "game:#{state.game_id}", {:bots_updated, bots})
     {:reply, bots, state}
   end
 

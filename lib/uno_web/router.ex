@@ -19,7 +19,8 @@ defmodule UnoWeb.Router do
 
     live_session :default,
       layout: {UnoWeb.Layouts, :game} do
-      live "/", Game.Index, :index
+      live "/", Game.Lobby, :index
+      live "/game/:id", Game.Index, :show
     end
   end
 

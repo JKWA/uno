@@ -36,6 +36,18 @@ defmodule Uno.Service do
     end
   end
 
+  @spec redeal(term()) :: Game.t()
+  def redeal(game_id) do
+    new_game = %{Game.start() | id: game_id}
+
+    maybe new_game, as: :raise do
+      bind Game.deal(2, 7)
+      bind Game.flip_card()
+      bind Repo.save()
+      tap Broadcast
+    end
+  end
+
   @spec get(term()) :: {:ok, Game.t()} | {:error, any()}
   def get(id) do
     Repo.get(id) |> Either.to_result()
